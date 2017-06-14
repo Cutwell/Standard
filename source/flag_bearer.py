@@ -77,6 +77,10 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
             webpage = open("pages/upload.html").read()
             gui.gen_secure_key()
 
+        elif "file" in post_data:
+            upload = post_data["file"][0]
+            webpage = "<div style='color:#c9d0e0; font-family:courier new; text-align:center;'><img src='logo.png' style='height: 250px; width: 250px;'></img><p style='font-size:50px;'>500 Error!</p><br><p style='font-size:25px;'>Access denied!</p></div>"
+
         else:
             webpage = "<div style='color:#c9d0e0; font-family:courier new; text-align:center;'><img src='logo.png' style='height: 250px; width: 250px;'></img><p style='font-size:50px;'>500 Error!</p><br><p style='font-size:25px;'>Access denied!</p></div>"
 

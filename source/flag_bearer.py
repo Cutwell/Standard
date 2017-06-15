@@ -15,6 +15,9 @@ class server_gui(object):
         self.password = pyre.input("Enter Passcode (optional)")
         pyre.pyre_root.withdraw()
 
+        # create the upload var, so we can access it from any instance of the HTTPServer_RequestHandler class
+        self.upload = ""
+
     def main(self):
         self.root = tk.Tk()
 
@@ -38,9 +41,15 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(open("logo.png", "rb").read())
             return
 
+        elif self.path == "/download":
+            with open("/upload/flag.txt") as fh:
+                self.send_header('Content-type', 'application/zip')
+                self.end_headers()
+                self.wfile.write(fh.read().encode())
+
         else:
             self.send_header('Content-type', 'text/html')
-            if self.path == "/download" or self.path == "/standard":
+            if self.path == "/standard":
                 if gui.password:
                     webpage = open("pages/password.html").read()
                     webpage = webpage.replace("%identifier%", "password")
@@ -48,6 +57,9 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
                 else:
                     webpage = open("pages/standard.html", "r").read()
                     webpage = webpage.replace("%user_name%", gui.username)
+                    webpage = webpage.replace("%path_to_file%", gui.upload)
+                    webpage = webpage.replace("%size_of_file%", str(len(gui.upload)/1000000))
+                    webpage = webpage.replace("%name_of_file%", gui.upload)
 
             elif self.path == "/upload":
                 webpage = open("pages/password.html").read()
@@ -62,32 +74,46 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
         return
 
     def do_POST(self):
-        self.send_response(301)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
-
         post_length = int(self.headers["Content-Length"])
         post_data = urllib.parse.parse_qs(self.rfile.read(post_length).decode("utf-8"))
+
+        # security feature
+        if "secure_key" in post_data and post_data["secure_key"][0] != str(gui.secure_key):
+            print("Bad Login: User attempted to access /upload page with bad secure_key")
+            gui.gen_secure_key()
+            webpage = "<div style='color:#c9d0e0; font-family:courier new; text-align:center;'><img src='logo.png' style='height: 250px; width: 250px;'></img><p style='font-size:50px;'>500 Error!</p><br><p style='font-size:25px;'>Access denied!</p></div>"
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            self.wfile.write(bytes(webpage, "utf8"))
+            return
 
         if "password" in post_data and post_data["password"][0] == str(gui.password):
             webpage = open("pages/standard.html", "r").read()
             webpage = webpage.replace("%user_name%", gui.username)
+            webpage = webpage.replace("%path_to_file%", gui.upload)
+            webpage = webpage.replace("%size_of_file%", str(len(gui.upload)/1000000))
+            webpage = webpage.replace("%name_of_file%", gui.upload)
 
         elif "secure_key" in post_data and post_data["secure_key"][0] == str(gui.secure_key):
             webpage = open("pages/upload.html").read()
             gui.gen_secure_key()
 
         elif "file" in post_data:
-            upload = post_data["file"][0]
+            length = int(self.headers['content-length'])
+            data = self.rfile.read(length)
+
+            with open("/upload/flag.txt", 'w') as file:
+                file.write(data.decode())
+
             webpage = "<div style='color:#c9d0e0; font-family:courier new; text-align:center;'><img src='logo.png' style='height: 250px; width: 250px;'></img><p style='font-size:50px;'>Upload Succesful!</p><br><p style='font-size:25px;'>Visit /standard to access the file for download</p></div>"
 
         else:
             webpage = "<div style='color:#c9d0e0; font-family:courier new; text-align:center;'><img src='logo.png' style='height: 250px; width: 250px;'></img><p style='font-size:50px;'>500 Error!</p><br><p style='font-size:25px;'>Access denied!</p></div>"
 
-        # security feature
-        if "secure_key" in post_data and post_data["secure_key"][0] != str(gui.secure_key):
-            print("Bad Login: User attempted to access /upload page with bad secure_key")
-            gui.gen_secure_key()
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
 
         self.wfile.write(bytes(webpage, "utf8"))
         return

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Standard</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+		    <link rel="icon" type="image/png" src="logo.png">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <style>
+          body{
+            text-align: center;
+			color: #c9d0e0;
+          }
+          #logo{
+            height: 250px;
+            width: 250px;
+          }
+		  #info{
+			font-family: courier new;
+			font-size: 40px;
+		  }
+		  .info2{
+			font-family: courier new;
+			font-size: 20px;
+		  }
+          br{
+            line-height: 40px;
+          }
+		  a{
+			text-decoration: none;
+			color: #c9d0e0;
+		  }
+		  .material-icons{
+			font-size: 50px;
+		  }
+        </style>
+    </head>
+    <body>
+      <img id="logo" src="../logo.png"><br>
+	     <p class="info2">File name: %name_of_file%</p><p class="info2">Size: %size_of_file%Mb</p><br>
+      <a title="click to download" href="/%name_of_file%" class="material-icons" download>file_download</a>
+    </body>
+</html>

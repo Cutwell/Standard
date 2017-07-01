@@ -71,9 +71,9 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        file_path = sys.argv[0]
+        file_path = sys.argv[1]
         if len(sys.argv) > 2:
-            password = sys.argv[1]
+            password = sys.argv[2]
         else:
             password = None
     else:
@@ -81,10 +81,10 @@ if __name__ == "__main__":
         password = input("Password (optional):\n> ")
     user = server_setup(file_path, password)
     html = webpage_setup()
-    
+
     local_ip = socket.gethostbyname(socket.gethostname())
     print("local ip: "+local_ip)
-    server_address = (local_ip, 8081)
+    server_address = ("localhost", 8081)
     httpd = HTTPServer(server_address, HTTPServer_RequestHandler)
     print("server running on localhost:8081/standard")
     httpd.serve_forever()
